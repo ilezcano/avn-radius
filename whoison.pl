@@ -3,8 +3,12 @@
 use DateTime;
 use strict;
 
+# Header is:
+# Date,Time,User-Name,Group-Name,Calling-Station-Id,Acct-Status-Type,Acct-Session-Id,Acct-Session-Time,Service-Type,Framed-Protocol,Acct-Input-Octets,Acct-Output-Octets,Acct-Input-Packets,Acct-Output-Packets,Framed-IP-Address,NAS-Port,NAS-IP-Address
+
 # Format of date is mm/dd/yyyy hh:mm:ss
 
+my %current;
 my $rawdate = $ARGV[1];
 
 my $dt = returndateobject($rawdate);
@@ -16,10 +20,27 @@ while (<ACCFILE>)
 	next if /^\D/;
 	my @line = split(/,/, $_);
 	my $linedt = returndateobject("$line[0] $line[1]");
-	next if ( DateTime->compare($linedt, $dt));
+	last unless (DateTime->compare($dt, $linedt) == 1);
+
+	if ($line[5] =~ /[sS]top/)
+		{
+		if (exists $current{$line[6]}) { delete $current{$line[6]}}
+		}
+	elsif ($line[5] =~ /[sS]tart/)
+		{
+		$current{$line[6]} = [ $line[2], $line[1], $line[6] ];
+		}
 	} 
 
 close(ACCFILE);
+
+foreach my $arrayref (values %current)
+	{
+	local $, = ", ";
+	local $\ = "\n";
+	print @$arrayref;
+	}
+
 
 sub returndateobject
 	{
