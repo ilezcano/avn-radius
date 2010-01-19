@@ -28,7 +28,7 @@ while (<ACCFILE>)
 		}
 	elsif ($line[5] =~ /[sS]tart/)
 		{
-		$current{$line[6]} = [ $line[2], $line[1], $line[6] ];
+		$current{$line[6]} = [ $line[2], $line[1], $line[6], $line[14] ];
 		}
 	} 
 
